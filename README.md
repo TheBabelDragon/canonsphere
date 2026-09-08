@@ -2,9 +2,11 @@
 
 **Field state → canonical bytes → state hash → deterministic sigil → stereographic system glyph.**
 
+Live: [https://thebabeldragon.github.io/canonsphere/](https://thebabeldragon.github.io/canonsphere/)
+
 CANONSPHERE is a small experimental architecture for turning a living multi-channel field into a *replayable identity*. Same field state always yields the same hash, the same seed, and the same stereographic sigil. The glyph is not decoration; it is a projection of state.
 
-This repo is a standalone sample originally written for Pythonista / iOS, with a headless fallback for ordinary CPython.
+This repo is a standalone sample originally written for Pythonista / iOS, with a headless fallback for ordinary CPython and a browser witness on GitHub Pages.
 
 ## Launch from YAML
 
@@ -38,6 +40,8 @@ Same YAML + same seed + same impinges ⇒ same card. If the card changes, the fi
 ```
 python launch.py launch.yaml --rmeme
 ```
+
+The `.io` page is the same card next to a live stereograph. Browser field init uses a JS PRNG, so hashes are self-consistent in the page, not bit-identical with CPython / NumPy.
 
 ## Architecture
 

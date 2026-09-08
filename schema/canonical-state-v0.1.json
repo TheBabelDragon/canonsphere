@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "canonical-state-v0.1",
+  "title": "CANONSPHERE canonical state",
+  "type": "object",
+  "required": ["version", "source", "shape", "channels", "sequence", "time", "dt"],
+  "properties": {
+    "version": { "const": "canonical-state-v0.1" },
+    "source": {
+      "type": "object",
+      "required": ["kind"],
+      "properties": {
+        "kind": { "type": "string" },
+        "id": { "type": "string" },
+        "hash": { "type": "string" }
+      }
+    },
+    "shape": {
+      "type": "object",
+      "required": ["width", "height", "channels"],
+      "properties": {
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 },
+        "channels": { "const": 4 }
+      }
+    },
+    "channels": {
+      "type": "object",
+      "required": ["matter", "energy", "temperature", "information"]
+    },
+    "sequence": { "type": "integer" },
+    "time": { "type": "number" },
+    "dt": { "type": "number" }
+  },
+  "binary": {
+    "magic": "CNS1",
+    "version": 1,
+    "float": "IEEE-754 float32",
+    "endianness": "little",
+    "channel_order": ["matter", "energy", "temperature", "information"],
+    "cell_order": "y-major, x-minor",
+    "header_bytes": 40
+  }
+}

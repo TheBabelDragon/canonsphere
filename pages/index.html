@@ -8,32 +8,83 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <canvas id="sphere"></canvas>
+  <canvas id="stage"></canvas>
+  <input id="file" type="file" accept="image/*" hidden />
+
+  <div id="drop">
+    <div class="drop-card">
+      <p class="kicker">TheBabelDragon</p>
+      <h1>CANONSPHERE</h1>
+      <p class="lede">image → field → canonical identity → stereograph</p>
+      <p class="hint">Drop an image, or load one. One pixel changes the identity.</p>
+      <div class="drop-actions">
+        <button type="button" id="load-empty">LOAD IMAGE</button>
+        <button type="button" id="random-empty" class="ghost">RANDOMIZE FIELD</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="progress" hidden>
+    <div class="prog-card">
+      <p id="prog-label">LOADING</p>
+      <div class="bar"><i id="prog-bar"></i></div>
+    </div>
+  </div>
 
   <header>
-    <p class="kicker">TheBabelDragon · field identity</p>
-    <h1>CANONSPHERE</h1>
-    <p class="lede">field → canonical bytes → hash → sigil → stereograph</p>
+    <p class="kicker">CANONSPHERE</p>
+    <p class="lede">image → field → canonical identity → stereograph</p>
   </header>
 
   <aside id="rmeme">
     <h2>RMEME</h2>
-    <pre id="card">SYSTEM READY
-No committed field tick.</pre>
+    <pre id="card">Drop an image to commit a sigil.</pre>
   </aside>
 
+  <div id="modes">
+    <button type="button" data-mode="image">IMAGE</button>
+    <button type="button" data-mode="field">FIELD</button>
+    <button type="button" data-mode="plane">PLANE</button>
+    <button type="button" data-mode="sphere" class="on">SPHERE</button>
+    <button type="button" data-mode="compare">COMPARE</button>
+  </div>
+
+  <div id="flow">
+    <span>IMAGE</span>
+    <input id="morph" type="range" min="0" max="300" value="300" />
+    <span>SPHERE</span>
+  </div>
+
+  <div id="sliders">
+    <label>ROTATION <input id="rotation" type="range" min="0" max="628" value="0" /></label>
+    <label>SYMMETRY <input id="symmetry" type="range" min="2" max="8" value="4" /></label>
+    <label>LAYERS <input id="layers" type="range" min="1" max="8" value="4" /></label>
+    <label>FIELD <input id="imprint" type="range" min="0" max="200" value="100" /></label>
+  </div>
+
   <nav>
-    <button type="button" id="tick">ADVANCE TICK</button>
-    <button type="button" id="impinge">IMPINGE</button>
-    <button type="button" id="burst">10-TICK BURST</button>
+    <button type="button" id="load">LOAD</button>
+    <button type="button" id="generate">GENERATE</button>
     <button type="button" id="verify">VERIFY</button>
+    <button type="button" id="export">EXPORT</button>
   </nav>
+
+  <details id="field-controls">
+    <summary>Field Controls</summary>
+    <div class="row">
+      <button type="button" id="tick">TICK</button>
+      <button type="button" id="impinge">IMPINGE</button>
+      <button type="button" id="burst">BURST ×10</button>
+      <button type="button" id="randomize">RANDOMIZE</button>
+    </div>
+  </details>
 
   <footer>
     <a href="https://github.com/TheBabelDragon/canonsphere">source</a>
-    <span id="status">idle</span>
+    <span id="status">awaiting image</span>
   </footer>
 
   <script src="engine.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>

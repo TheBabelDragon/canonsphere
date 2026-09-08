@@ -1,0 +1,47 @@
+capabilities:
+  - name: launch-from-yaml
+    description: Boot the engine from launch.yaml and emit ticks plus an optional RMEME card.
+    inputs: [launch.yaml]
+    outputs: [FieldTick, RMEME]
+    operation: launch
+    side_effects: []
+    requires: [launch.yaml]
+    produces: [FieldTick, RMEME]
+    safe: true
+    entry: python launch.py launch.yaml
+  - name: field-tick
+    description: Advance the multi-channel field and commit a hashed FieldTick.
+    inputs: [FieldState]
+    outputs: [FieldTick]
+    operation: compute
+    side_effects: []
+    requires: []
+    produces: [FieldTick]
+    safe: true
+  - name: impinge
+    description: Inject energy into a channel cell. Writes information as a side effect.
+    inputs: [x, y, strength, channel]
+    outputs: [FieldState]
+    operation: ingest
+    side_effects: [field-write]
+    requires: []
+    produces: [FieldState]
+    safe: false
+  - name: verify-sigil
+    description: Re-derive the sigil from (state_hash, metrics) and compare seeds.
+    inputs: [FieldTick]
+    outputs: [pass-fail]
+    operation: read
+    side_effects: []
+    requires: [FieldTick]
+    produces: []
+    safe: true
+  - name: emit-rmeme
+    description: Print the replay-identity card for the last committed tick.
+    inputs: [FieldTick]
+    outputs: [RMEME]
+    operation: emit
+    side_effects: []
+    requires: [FieldTick]
+    produces: [RMEME]
+    safe: true

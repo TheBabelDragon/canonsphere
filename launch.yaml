@@ -1,0 +1,24 @@
+canonsphere: "0.1"
+identity:
+  name: canonsphere
+  arch: CANONSPHERE
+  owner: TheBabelDragon
+  repo: TheBabelDragon/canonsphere
+
+engine:
+  size: 48
+  seed: 1337
+  dt: 1.0
+
+run:
+  ticks: 8
+  burst: 0
+  verify: true
+  render: false
+  rmeme: true
+
+impinge:
+  - x: null
+    y: null
+    strength: 2.0
+    channel: 0

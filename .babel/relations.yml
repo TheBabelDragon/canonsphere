@@ -1,0 +1,13 @@
+consumes:
+  - field-os
+produces:
+  - FieldTick
+  - Sigil
+  - RMEME
+compatible_with:
+  - field-os
+  - metafield-engine
+  - babel-interface
+observes: []
+depends_on: []
+isolates: []

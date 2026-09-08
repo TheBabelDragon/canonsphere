@@ -6,9 +6,45 @@ CANONSPHERE is a small experimental architecture for turning a living multi-chan
 
 This repo is a standalone sample originally written for Pythonista / iOS, with a headless fallback for ordinary CPython.
 
+## Launch from YAML
+
+```bash
+pip install -r requirements.txt
+python launch.py
+python launch.py launch.yaml --render
+```
+
+`launch.yaml` is the boot surface: seed, grid, ticks, impinges, verify, render, RMEME.
+
+```yaml
+engine:
+  size: 48
+  seed: 1337
+run:
+  ticks: 8
+  verify: true
+  rmeme: true
+impinge:
+  - strength: 2.0
+    channel: 0
+```
+
+## RMEME
+
+RMEME is the replay-identity card. It is not a joke file. It is the last committed tick compressed into a shareable block: sequence, hash prefix, sigil seed, symmetry, layers, channel metrics.
+
+Same YAML + same seed + same impinges ⇒ same card. If the card changes, the field changed.
+
+```
+python launch.py launch.yaml --rmeme
+```
+
 ## Architecture
 
 ```
+launch.yaml
+    |
+    v
 FieldState (matter, energy, temperature, information)
         |
         |  evolve / impinge
@@ -18,6 +54,8 @@ canonical header + float32 payload
         |  SHA-256
         v
 state hash  ──►  Sigil (seed, symmetry, layers, points)
+                        |
+                        +── RMEME card
                         |
                         |  inverse stereographic map
                         v
@@ -30,6 +68,7 @@ state hash  ──►  Sigil (seed, symmetry, layers, points)
 2. **Identity is the hash.** The sigil seed is the first 64 bits of SHA-256. Verification is just: re-derive the sigil from `(state_hash, metrics)` and compare seeds.
 3. **Geometry is a witness.** Points live on the plane, then ride the Riemann / stereographic map onto the sphere so the glyph has a north-pole topology instead of a flat doodle.
 4. **History is a ring.** The last 128 ticks are kept so a sequence can be replayed and checked.
+5. **YAML is the launch.** The engine is not configured in code for a run. The run is a document.
 
 Channels:
 
@@ -40,10 +79,9 @@ Channels:
 | 2     | temperature   | damped accumulation of |energy|           |
 | 3     | information   | written by injections and field mismatch  |
 
-## Run
+## Run without YAML
 
 ```bash
-pip install -r requirements.txt
 python sigil_engine.py
 ```
 
@@ -67,6 +105,8 @@ On [Pythonista](http://omz-software.com/pythonista/) the same file opens a dark 
 | `FieldTick`           | immutable snapshot of one committed step         |
 | `SystemsSigilEngine`  | evolve, impinge, history, verify                 |
 | `SigilRenderer`       | 3D matplotlib glyph + sphere wireframe           |
+
+Babel contract lives in `.babel/`.
 
 ## Verify identity
 

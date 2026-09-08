@@ -23,7 +23,28 @@ try:
 except ImportError as exc:
     raise SystemExit("PyYAML is required: pip install -r requirements.txt") from exc
 
-from sigil_engine import CHANNEL_NAMES, SigilRenderer, SystemsSigilEngine
+
+def load_engine_module():
+    """
+    Load SystemsSigilEngine without executing the Pythonista UI
+    or the headless demo attached to sigil_engine.py.
+    """
+    source_path = Path(__file__).resolve().parent / "sigil_engine.py"
+    source = source_path.read_text(encoding="utf-8")
+    head, marker, _tail = source.partition("\n# PYTHONISTA UI")
+    if not marker:
+        raise SystemExit("sigil_engine.py missing PYTHONISTA UI marker")
+    module = type(sys)("sigil_engine")
+    module.__file__ = str(source_path)
+    exec(compile(head, str(source_path), "exec"), module.__dict__)
+    sys.modules["sigil_engine"] = module
+    return module
+
+
+engine_mod = load_engine_module()
+CHANNEL_NAMES = engine_mod.CHANNEL_NAMES
+SigilRenderer = engine_mod.SigilRenderer
+SystemsSigilEngine = engine_mod.SystemsSigilEngine
 
 
 def load_launch(path: Path) -> dict:

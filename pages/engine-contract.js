@@ -43,4 +43,15 @@
     setImage.call(this, img, maps, rawBytes);
     this.sourceHash = null;
   };
+
+  const snapshot = proto.snapshot;
+  proto.snapshot = async function (view) {
+    if (this.sourceKind && !this.sourceHash) {
+      this.sourceHash = await C.sourceHash(
+        this.sourceKind,
+        this.sourceBytes || new TextEncoder().encode(this.sourceKind)
+      );
+    }
+    return snapshot.call(this, view);
+  };
 })(window.Canonsphere);

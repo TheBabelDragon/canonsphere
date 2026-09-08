@@ -7,7 +7,14 @@ produces:
 compatible_with:
   - field-os
   - metafield-engine
+  - signal-processor
+  - neuro-swarm
+  - c3-field-swarm
   - babel-interface
-observes: []
+observes:
+  - field-os
+  - metafield-engine
+  - signal-processor
+  - neuro-swarm
 depends_on: []
 isolates: []

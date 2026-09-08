@@ -36,8 +36,10 @@
     });
     engine.sourceKind = opts.kind || "artifact";
     engine.sourceHash = artifactHash;
-    engine.lastTick.sourceHash = artifactHash;
-    engine.lastTick.rmeme = C.rmemeObject(engine.lastTick);
+    if (engine.lastTick) {
+      engine.lastTick.sourceHash = artifactHash;
+      engine.lastTick.rmeme = C.rmemeObject(engine.lastTick);
+    }
     return engine;
   }
 

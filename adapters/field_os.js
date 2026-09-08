@@ -11,6 +11,7 @@
       source: {
         kind: "field-tick",
         id: String(tick.id || tick.sequence || "tick"),
+        hash: tick.source_hash || tick.hash,
       },
       shape: { width: size, height: size, channels: 4 },
       channels: {

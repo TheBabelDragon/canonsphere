@@ -4,37 +4,41 @@ identity:
   owner: TheBabelDragon
   repo: TheBabelDragon/canonsphere
   url: https://github.com/TheBabelDragon/canonsphere
-  kind: sigil-engine
-  version: "0.1.0"
+  kind: witness-layer
+  version: "0.2.0"
 purpose: >
-  Canonical field-state hashing to a deterministic stereographic sigil.
-  YAML is the launch surface. RMEME is the replay identity card.
+  Witness layer: canonical field-state hashing to a deterministic
+  stereographic sigil. Adapters reduce external systems to
+  canonical-state-v0.1. Core never depends on source repos.
 status: experimental
 entrypoints:
+  - kind: pages
+    path: pages/index.html
   - kind: cli
     command: python launch.py launch.yaml
     output: json
   - kind: module
-    path: sigil_engine.py
+    path: pages/engine.js
 runtime:
-  language: python
+  language: javascript
   requires:
     - python>=3.10
     - numpy
     - PyYAML
 inputs:
-  - name: launch.yaml
-    schema: launch.yaml
+  - name: canonical-state-v0.1
+    schema: schema/canonical-state-v0.1.json
 outputs:
-  - name: FieldTick
+  - name: canonical-bytes
+  - name: state-hash
   - name: Sigil
   - name: RMEME
 capabilities:
   - launch-from-yaml
   - field-tick
-  - impinge
   - verify-sigil
   - emit-rmeme
+  - witness-adapters
 operations:
-  safe: [launch-from-yaml, field-tick, verify-sigil, emit-rmeme]
+  safe: [launch-from-yaml, field-tick, verify-sigil, emit-rmeme, witness-adapters]
   mutation: [impinge]

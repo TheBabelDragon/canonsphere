@@ -18,6 +18,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: stage adapters for pages
+        run: |
+          mkdir -p pages/adapters
+          cp adapters/*.js pages/adapters/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

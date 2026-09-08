@@ -23,8 +23,11 @@
 
   async function fromSignal(samples, opts = {}) {
     const size = opts.size || C.GRID;
-    const raw = samples instanceof Float32Array ? new Uint8Array(samples.buffer.slice(0)) : new TextEncoder().encode(String(samples.length));
-    return C.fromState({
+    const raw =
+      samples instanceof Float32Array
+        ? new Uint8Array(samples.buffer.slice(0))
+        : new TextEncoder().encode(String(samples.length));
+    const engine = await C.fromState({
       version: C.STATE_VERSION,
       source: { kind: "signal", id: opts.id || "samples" },
       shape: { width: size, height: size, channels: 4 },
@@ -32,13 +35,14 @@
       sequence: opts.sequence || 0,
       time: opts.time || 0,
       dt: opts.dt || 1,
-    }).then(async (engine) => {
-      engine.sourceKind = "signal";
-      engine.sourceHash = await C.sourceHash("signal", raw);
+    });
+    engine.sourceKind = "signal";
+    engine.sourceHash = await C.sourceHash("signal", raw);
+    if (engine.lastTick) {
       engine.lastTick.sourceHash = engine.sourceHash;
       engine.lastTick.rmeme = C.rmemeObject(engine.lastTick);
-      return engine;
-    });
+    }
+    return engine;
   }
 
   C.adapters.signal = { fromSignal };

@@ -8,7 +8,7 @@ import numpy as np
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from canonical import HEADER_SIZE, decode, encode, state_hash
+from canonical import HEADER_SIZE, decode, encode, source_hash, state_hash
 
 
 def test_header_size():
@@ -47,3 +47,22 @@ def test_tamper_changes_hash():
     ch[0, 0, 0] += 0.001
     b = encode(ch, width=2, height=2, sequence=1)
     assert hashlib.sha256(a).digest() != hashlib.sha256(b).digest()
+
+
+def test_source_hash_distinct_from_state_hash():
+    ch = np.zeros((4, 2, 2), np.float32)
+    blob = encode(ch, width=2, height=2, sequence=42)
+    src = source_hash("image", b"hello")
+    assert src == "98edacb1641111563119e179840173bc7aaa1e99bf1a1db0a6dc47a916aa50ca"
+    assert src != state_hash(blob)
+
+
+def test_swarm_vector_is_stable():
+    ch = np.zeros((4, 2, 2), np.float32)
+    ch[0, 0, 0] = 0.5
+    ch[1, 0, 0] = 0.25
+    blob = encode(ch, width=2, height=2, sequence=7, time=7.0, dt=1.0)
+    digest = state_hash(blob)
+    hex_path = ROOT / "tests" / "vectors" / "swarm-2x2.hex"
+    assert hex_path.read_text().strip() == blob.hex()
+    assert digest == hashlib.sha256(blob).hexdigest()

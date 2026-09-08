@@ -1,5 +1,5 @@
 (() => {
-  const { GRID, Engine, sampleImage, project } = window.Canonsphere;
+  const { GRID, Engine, sampleImage, project, rmemeText, rmemeSVG, formatVerify } = window.Canonsphere;
   const canvas = document.getElementById("stage");
   const ctx = canvas.getContext("2d");
   const file = document.getElementById("file");
@@ -10,6 +10,7 @@
   const card = document.getElementById("card");
   const statusEl = document.getElementById("status");
   const engine = new Engine();
+  window.CanonsphereApp = { engine };
   let mode = "sphere";
   let morph = 3;
   let spin = 0.35;
@@ -27,26 +28,12 @@
     statusEl.textContent = text;
     statusEl.className = kind;
   }
-  function rmeme(extra = "") {
+  function cardText(extra = "") {
     const tick = engine.lastTick;
-    if (!tick) return "Drop an image to commit a sigil.";
+    if (!tick || !tick.rmeme) return (formatVerify ? "" : "") || (rmemeText ? rmemeText(null) : "Drop an image to commit a sigil.");
     const m = tick.metrics;
-    const s = tick.sigil;
-    return [
-      "SIGIL COMMITTED",
-      "SEQ       " + String(tick.sequence).padStart(3, "0"),
-      "SHA256    " + tick.stateHash.slice(0, 16) + "...",
-      "SEED      " + s.seed,
-      "SYMMETRY  " + s.symmetry,
-      "LAYERS    " + s.layers,
-      "POINTS    " + s.points.length,
-      "",
-      "MATTER    " + m.matter.toFixed(5),
-      "ENERGY    " + m.energy.toFixed(5),
-      "TEMP      " + m.temperature.toFixed(5),
-      "INFO      " + m.information.toFixed(5),
-      extra,
-    ].join("\n");
+    const metrics = ["", "MATTER    " + m.matter.toFixed(5), "ENERGY    " + m.energy.toFixed(5), "TEMP      " + m.temperature.toFixed(5), "INFO      " + m.information.toFixed(5), extra].join("\n");
+    return rmemeText(tick.rmeme, metrics);
   }
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   async function stage(label, pct) {
@@ -59,13 +46,14 @@
 
   async function ingestFile(blob) {
     await stage("LOADING", 20);
+    const raw = new Uint8Array(await blob.arrayBuffer());
     const url = URL.createObjectURL(blob);
     const img = new Image();
     img.src = url;
     await img.decode();
     imageBitmap = img;
     await stage("SAMPLING", 45);
-    engine.setImage(img, sampleImage(img, GRID));
+    engine.setImage(img, sampleImage(img, GRID), raw);
     await generate(true);
     URL.revokeObjectURL(url);
   }
@@ -89,8 +77,8 @@
     await stage("SIGIL COMMITTED", 100);
     await sleep(180);
     progress.hidden = true;
-    card.textContent = rmeme();
-    setStatus("HASH " + tick.stateHash.slice(0, 8) + "\u2026");
+    card.textContent = cardText();
+    setStatus("STATE " + tick.stateHash.slice(0, 8) + "\u2026");
   }
 
   function applyView() {
@@ -98,7 +86,7 @@
     const tick = engine.lastTick;
     tick.sigil = new window.Canonsphere.Sigil(tick.stateHash, tick.metrics, view);
     tick.stereograph = tick.sigil.points.map(([x, y]) => project(x, y, tick.sigil.rotation));
-    card.textContent = rmeme();
+    card.textContent = cardText();
   }
   function syncSliders() {
     document.getElementById("rotation").value = Math.round(view.rotation * 100);
@@ -236,27 +224,42 @@
   document.getElementById("load-empty").onclick = openFile;
   file.onchange = () => { if (file.files[0]) ingestFile(file.files[0]); };
   document.getElementById("generate").onclick = () => generate(Boolean(engine.maps));
-  document.getElementById("verify").onclick = () => {
-    const ok = engine.verify();
-    if (ok == null) return setStatus("NO TICK TO VERIFY", "bad");
-    setStatus("VERIFY " + (ok ? "PASS" : "FAIL"), ok ? "ok" : "bad");
-    card.textContent = rmeme("\nVERIFICATION  " + (ok ? "PASS" : "FAIL"));
+  document.getElementById("verify").onclick = async () => {
+    const report = await engine.verify();
+    if (report == null) return setStatus("NO TICK TO VERIFY", "bad");
+    setStatus("VERIFY " + (report.pass ? "PASS" : "FAIL"), report.pass ? "ok" : "bad");
+    card.textContent = cardText("\n" + formatVerify(report));
   };
+  document.getElementById("tamper").onclick = async () => {
+    if (!engine.lastTick) return setStatus("NO TICK TO TAMPER", "bad");
+    engine.tamper();
+    const report = await engine.verify();
+    setStatus("TAMPER " + (report.pass ? "UNCHANGED" : "DETECTED"), report.pass ? "bad" : "ok");
+    card.textContent = cardText("\nTAMPER TEST\n" + formatVerify(report));
+  };
+  function download(name, blob) {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+  }
   document.getElementById("export").onclick = () => {
     if (!engine.lastTick) return;
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([rmeme("\nARCH  CANONSPHERE")], { type: "text/plain" }));
-    a.download = "rmeme-" + engine.lastTick.stateHash.slice(0, 12) + ".txt";
-    a.click();
+    const id = engine.lastTick.stateHash.slice(0, 12);
+    const obj = engine.lastTick.rmeme;
+    download("rmeme-" + id + ".txt", new Blob([cardText("\nARCH  CANONSPHERE")], { type: "text/plain" }));
+    download("rmeme-" + id + ".json", new Blob([JSON.stringify(obj, null, 2)], { type: "application/json" }));
+    download("rmeme-" + id + ".svg", new Blob([rmemeSVG(obj)], { type: "image/svg+xml" }));
     const shot = document.createElement("a");
     shot.href = canvas.toDataURL("image/png");
-    shot.download = "canonsphere-" + engine.lastTick.stateHash.slice(0, 12) + ".png";
+    shot.download = "canonsphere-" + id + ".png";
     shot.click();
-    setStatus("exported RMEME + glyph");
+    setStatus("exported txt / json / svg / png");
   };
   async function snap() {
     await engine.snapshot(view);
-    card.textContent = rmeme();
+    card.textContent = cardText();
     setStatus("SEQ " + engine.lastTick.sequence);
   }
   document.getElementById("tick").onclick = async () => { engine.field.evolve(); await snap(); };
@@ -271,17 +274,21 @@
   };
   document.getElementById("randomize").onclick = async () => {
     if (imageBitmap) {
-      engine.setImage(imageBitmap, sampleImage(imageBitmap, GRID, Math.random(), Math.random()));
+      engine.setImage(imageBitmap, sampleImage(imageBitmap, GRID, Math.random(), Math.random()), engine.sourceBytes);
       await generate(true);
     } else {
       engine.field.noise((Math.random() * 1e9) | 0);
       engine.field.sequence = 0;
+      engine.sourceKind = "field";
+      engine.sourceHash = null;
       await generate(false);
     }
   };
   document.getElementById("random-empty").onclick = async () => {
     hideDrop();
     engine.field.noise((Math.random() * 1e9) | 0);
+    engine.sourceKind = "field";
+    engine.sourceHash = null;
     await generate(false);
   };
   window.addEventListener("dragover", (e) => { e.preventDefault(); document.body.classList.add("drag"); drop.classList.remove("hidden"); });
